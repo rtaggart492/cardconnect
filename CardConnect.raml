@@ -6,10 +6,6 @@ securedBy: basic
 securitySchemes:
   basic:
     type: Basic Authentication
-    settings:
-      key: testing:testing123
-  traits:
-    type: Basic Authentication
 
 protocols: [ HTTP, HTTPS ]
 mediaType: [application/json, application/xml ]
@@ -97,26 +93,26 @@ types:
         ponumber: string
         taxamnt: integer
 
-responses:
+   responses:
     401:
 
     200:
-          descrption:
-          body:
-            application/json:
-              properties:
-              respproc: string
-              amount: string
-              resptext: string
-              setlstat: string
-              commcard: string
-              retref: string
-              respstat: string
-              respcode: string
-              batchid: string
-              account: string
-              merchid: string
-              token: string
+      description:  Hi
+      body:
+        application/json:
+          properties:
+            respproc: string
+            amount: string
+            resptext: string
+            setlstat: string
+            commcard: string
+            retref: string
+            respstat: string
+            respcode: string
+            batchid: string
+            account: string
+            merchid: string
+            token: string
 
 /void:
   description: void a previously authorized transaction
@@ -256,24 +252,24 @@ responses:
         date:
           type: string
 
-          responses:
-            200: # HTTP STatus Code
-              body:
-                application/json:
-                  properties:
-                    cardtype: string
-                    status: string
-                    retref: string
-                    interchangeunitfee: string
-                    cardnumber: string
-                    type: string
-                    fundingid: number
-                    interchangepercentfee: number
-                    date: date
-                    currency: string
-                    cardbrand: string
-                    amount: number
-                    fundingtxnid: number
+    responses:
+      200:
+        body:
+          application/json:
+            properties:
+              cardtype: string
+              status: string
+              retref: string
+              interchangeunitfee: string
+              cardnumber: string
+              type: string
+              fundingid: number
+              interchangepercentfee: number
+              date: string
+              currency: string
+              cardbrand: string
+              amount: number
+              fundingtxnid: number
 
 
 
