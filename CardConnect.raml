@@ -1,0 +1,718 @@
+#%RAML 1.0
+title: CardConnect Rest API
+version: v1
+baseUri: /cardconnect/rest
+		
+securitySchemes:
+  basic:
+    description: |
+      This API supports Basic Authentication.
+    type: Basic Authentication
+
+protocols: [ HTTP, HTTPS ]
+mediaType: [application/json, application/xml ]
+uses:
+
+types:
+  type: object
+  lineitem:
+   properties:
+    discamnt: string
+    unitcost: string
+    uom: string
+    lineno: string
+    description: string
+    taxamnt: string
+    quantity: string
+    upc: string
+    netamnt: string
+    material: string
+
+/auth:
+
+  put:
+    description: Authorize a transaction
+    body:
+      application/json:
+
+        properties:
+          merchid: string
+          accttype: string
+          orderid: string
+          account: string
+          expiry: string
+          amount: string
+          currency: string
+          name: string
+          address: string
+          city: string
+          region: string
+          country: string
+          postal: string
+          ecomind: string
+          cvv2: string
+          track: string
+          tokenize: string
+          capture: string
+
+          responses:
+           200: # HTTP STatus Code
+             body:
+               application/json:
+                 properties:
+                   respstat: string
+                   account: string
+                   token: string
+                   retref: string
+                   amount: string
+                   merchid: string
+                   respcode: string
+                   resptext: string
+                   avsresp: string
+                   cvvresp: string
+                   authcode: string
+                   respproc: string
+                   emv: string
+
+                 example: |
+                   {
+                    "merchid": "000000927996",
+                    "accttype": "VISA",
+                    "orderid": "AB-11-9876",
+                    "account": "4111111111111111",
+                    "expiry": "1218",
+                    "amount": "0",
+                    "currency": "USD",
+                    "name": "TOM JONES",
+                    "address": "123 MAIN STREET",
+                    "city": "anytown",
+                    "region": "NY",
+                    "country": "US",
+                    "postal": "55555",
+                    "ecomind": "E",
+                    "cvv2": "123",
+                    "track": null,
+                    "tokenize": "Y",
+                    "capture": "Y"
+                    }
+
+
+
+/capture:
+
+ description: capture a previously authorized transaction
+
+
+ put:
+   body:
+    application/json:
+
+      properties:
+        retref: string
+        merchid: string
+        authcode: string
+        amount: string
+        invoiceid: string
+        ponumber: string
+        taxamnt: integer
+        items: lineitem[]
+
+        responses:
+           200: # HTTP STatus Code
+               body:
+                 application/json:
+                   properties:
+                     respproc: string
+                     amount: string
+                     resptext: string
+                     setlstat: string
+                     commcard: string
+                     retref: string
+                     respstat: string
+                     respcode: string
+                     batchid: string
+                     account: string
+                     merchid: string
+                     token: string
+
+                     example: |
+                       {
+                       "respproc": "FNOR",
+                       "amount": "0.01",
+                       "resptext": "Approval",
+                       "setlstat": "Queued for Capture",
+                       "commcard": " C ",
+                       "retref": "227082251218",
+                       "respstat": "A",
+                       "respcode": "00",
+                       "batchid": "1900941262",
+                       "account": "9441149619831111",
+                       "merchid": "496160873888",
+                       "token": "9441149619831111"
+                        }
+
+/void:
+  description: void a previously authorized transaction
+
+  put:
+    body:
+     application/json:
+
+       properties:
+         retref: string
+         merchid: string
+         amount: string
+
+         responses:
+            200: # HTTP STatus Code
+                body:
+                  application/json:
+                    properties:
+                      merchid: string
+                      amount: string
+                      currency: string
+                      retref: string
+                      authcode: string
+                      respcode: string
+                      respproc: string
+                      respstat: string
+                      resptext: string
+
+/refund:
+  description: refund a previously captured transaction
+
+  put:
+    body:
+     application/json:
+
+       properties:
+         retref: string
+         merchid: string
+         amount: string
+
+         responses:
+            200: # HTTP STatus Code
+                body:
+                  application/json:
+                    properties:
+                    amount: string
+                    resptext: string
+                    authcode: string
+                    respcode: string
+                    retref: string
+                    merchid: string
+                    cvvresp: string
+                    account: string
+                    avsresp: string
+                    respproc: string
+                    respstat: string
+
+/inquire:
+
+  description: inquire about a transaction
+
+  put:
+    body:
+     application/json:
+
+       properties:
+         retref: string
+         merchid: string
+
+         responses:
+            200: # HTTP STatus Code
+                body:
+                  application/json:
+                    properties:
+                    amount: string
+                    resptext: string
+                    setlstat: string
+                    capturedate: string
+                    respcode: string
+                    batchid: string
+                    merchid: string
+                    token: string
+                    respproc: string
+                    authdate: string
+                    lastfour: string
+                    name: string
+                    currency: string
+                    retref: string
+                    respstat: string
+                    account: string
+                    example: |
+                      {
+                      "amount": "0.01",
+                      "resptext": "Approval",
+                      "setlstat": "Queued for Capture",
+                      "capturedate": "20170815142832",
+                      "respcode": "00",
+                      "batchid": "1900941262",
+                      "merchid": "496160873888",
+                      "token": "9441149619831111",
+                      "respproc": "FNOR",
+                      "authdate": "20170815",
+                      "lastfour": "1111",
+                      "name": "CC TEST",
+                      "currency": "USD",
+                      "retref": "227145252112",
+                      "respstat": "A",
+                      "account": "9441149619831111"
+                      }
+
+/setlstat:
+
+  description: settlment batch information
+
+  get:
+    description: retrieve all settlement batches by date for merchant
+
+    queryParameters:
+        merchid:
+          type: string
+        date:
+          type: date-only
+
+          responses:
+            200: # HTTP STatus Code
+              body:
+                application/json:
+                  properties:
+                      respproc: string
+                      hostbatch: string
+                      refundtotal: string
+                      batchid: string
+                      chargetotal: string
+                      hoststat: string
+                      merchid: string
+
+
+                  example: |
+                  [
+                    {
+                      "respproc": "FNOR",
+                      "hostbatch": "1900941820",
+                      "refundtotal": "0.00",
+                      "batchid": "1900941259",
+                      "chargetotal": "253.43",
+                      "hoststat": "GB",
+                      "merchid": "496160873888",
+                      "txns":
+                      [
+                        {
+                          "setlamount": "53.43",
+                          "setlstat": "Y",
+                          "salesdoc": "MPIP1329221589",
+                          "retref": "224581244288"
+                        },
+                        {
+                          "setlamount": "200.00",
+                          "setlstat": "Y",
+                          "salesdoc": "423625",
+                          "retref": "224604245655"
+                        }
+                      ]
+                    }
+                  ]
+
+/funding:
+
+  description: provide bank deposit data
+
+  get:
+
+    description: retrieve all bank deposits by date for merchant
+
+    queryParameters:
+        merchid:
+          type: string
+        date:
+          type: string
+
+          responses:
+            200: # HTTP STatus Code
+              body:
+                application/json:
+                  properties:
+                    cardtype: string
+                    status: string
+                    retref: string
+                    interchangeunitfee: string
+                    cardnumber: string
+                    type: string
+                    fundingid: number
+                    interchangepercentfee: number
+                    date: date
+                    currency: string
+                    cardbrand: string
+                    amount: number
+                    fundingtxnid: number
+
+                example: |
+                {
+                  "txns":    [
+                  {
+                  "cardtype": "Credit",
+                  "status": "Processed",
+                  "retref": null,
+                  "interchangeunitfee": null,
+                  "cardnumber": "44XXXXXXXXXX4329",
+                  "type": "Sale",
+                  "fundingid": 13899,
+                  "interchangepercentfee": null,
+                  "date": "2014-03-31",
+                  "currency": "USD",
+                  "cardbrand": "Visa",
+                  "amount": 995,
+                  "fundingtxnid": 25
+                  },
+                  {
+                  "cardtype": "Credit",
+                  "status": "Processed",
+                  "retref": null,
+                  "interchangeunitfee": null,
+                  "cardnumber": "37XXXXXXXXXX003",
+                  "type": "Sale",
+                  "fundingid": 13900,
+                  "interchangepercentfee": null,
+                  "date": "2014-03-31",
+                  "currency": "USD",
+                  "cardbrand": "American Express",
+                  "amount": 1495,
+                  "fundingtxnid": 25
+                  },
+                  {
+                  "cardtype": "Credit",
+                  "status": "Processed",
+                  "retref": null,
+                  "interchangeunitfee": null,
+                  "cardnumber": "52XXXXXXXXXX7030",
+                  "type": "Sale",
+                  "fundingid": 13907,
+                  "interchangepercentfee": null,
+                  "date": "2014-03-31",
+                  "currency": "USD",
+                  "cardbrand": "Mastercard",
+                  "amount": 1145,
+                  "fundingtxnid": 25
+                  },
+                  {
+                  "cardtype": "Credit",
+                  "status": "Processed",
+                  "retref": null,
+                  "interchangeunitfee": null,
+                  "cardnumber": "45XXXXXXXXXX1081",
+                  "type": "Sale",
+                  "fundingid": 13909,
+                  "interchangepercentfee": null,
+                  "date": "2014-03-31",
+                  "currency": "USD",
+                  "cardbrand": "Visa",
+                  "amount": 1495,
+                  "fundingtxnid": 25
+                  }
+                  ],
+                  "fundingdate": "2014-03-31",
+                  "merchid": "496400000840",
+                  "datechanged": null,
+                  "fundings":
+                    [
+                    {
+                    "totalfunding": 3635,
+                    "ddanumber": "5XXXXX1756",
+                    "datechanged": "2014-04-11",
+                    "interchangefee": 0,
+                    "fundingid": 405,
+                    "fundingmasterid": 25,
+                    "servicecharge": 0,
+                    "currency": "USD",
+                    "fee": 0,
+                    "dateadded": "2014-04-11",
+                    "adjustment": 0,
+                    "netsales": 5130,
+                    "thirdparty": -1495,
+                    "otheradjustment": 0,
+                    "reversal": 0,
+                    "abanumber": "054000030"
+                  }
+              ],
+              "fundingmasterid": 25,
+              "adjustments":
+                [
+                {
+                  "amount": -1495,
+                  "category": "THIRD PARTY",
+                  "dateadded": "2014-04-11",
+                  "description": "THIRD PARTY ADJUSTMENTS",
+                  "merchid": "496202840880",
+                  "datechanged": "2014-04-11",
+                  "type": "THIRD PARTY ADJUSTMENTS",
+                  "fundingmasterid": 25,
+                  "fundingadjustmentid": 1081,
+                  "currency": "USD"
+                }
+                ]
+                }
+
+/profile:
+
+  description: card on file service
+
+  get:
+
+    description: retrieve a profile and either 1 or all accounts
+
+    queryParameters:
+        profileid:
+          type: string
+        acctid:
+          type: string
+        merchid:
+          type: string
+
+        responses:
+          200: # HTTP STatus Code
+            body:
+              application/json:
+                properties:
+                  region: string
+                  postal: string
+                  address: string
+                  accttype: string
+                  token: string
+                  name: string
+                  license: string
+                  country: string
+                  city: string
+                  expiry: string
+                  profileid: string
+                  acctid: string
+
+                example: |
+                  [
+                  {
+                  "region": "AK",
+                  "postal": "19090",
+                  "address": "123 MAIN STREET",
+                  "accttype": "VISA",
+                  "token": "9440670166031111",
+                  "name": "TOM JONES",
+                  "license": "123451254",
+                  "country": "US",
+                  "city": "ANYTOWN",
+                  "expiry": "0214",
+                  "profileid": "12345678901234567890",
+                  "acctid": "1"
+                  }
+                  ]
+
+
+  put:
+      description: create a profile
+
+      body:
+        application/json:
+
+          properties:
+
+            merchid: string
+            accttype: string
+            account: string
+            expiry: string
+            name: string
+            address: string
+            city: string
+            region: string
+            country: string
+            phone: string
+            postal: string
+            ssnl4: string
+            license: string
+
+          responses:
+            200: # HTTP STatus Code
+              body:
+                application/json:
+                  properties:
+
+
+
+                example: |
+                {
+                  "country": "US",
+                  "address": "123 MAIN STREET",
+                  "resptext": "Profile Saved",
+                  "city": "ANYTOWN",
+                  "acctid": "1",
+                  "respcode": "09",
+                  "defaultacct": "Y",
+                  "accttype": "VISA",
+                  "token": "9441149619831111",
+                  "license": "123451254",
+                  "respproc": "PPS",
+                  "phone": "7778789999",
+                  "profileid": "12305454023615201322",
+                  "name": "TOM JONES",
+                  "auoptout": "N",
+                  "postal": "19090",
+                  "expiry": "0214",
+                  "region": "AK",
+                  "ssnl4": "3655",
+                  "respstat": "A"
+                }
+
+  delete:
+    description: delete a profile
+
+    queryParameters:
+        profileid:
+          type: string
+        acctid:
+          type: string
+        merchid:
+          type: string
+
+          responses:
+            200: # HTTP STatus Code
+              body:
+                application/json:
+                  properties:
+                    respcode: string
+                    resptext: string
+                    profileid: string
+                    acctid: string
+                    respproc: string
+                    respstat: string
+
+                    example: |
+                      {
+                      "resptext": "Profile Deleted",
+                      "respcode": "08",
+                      "profileid": "12345678901234567890",
+                      "acctid": "1",
+                      "respproc": "PPS",
+                      "respstat": "A"
+                      }
+
+/sigcap:
+  put:
+      description: save a signature image
+
+      body:
+        application/json:
+
+          properties:
+            merchid: string
+            retref: string
+            signature: object
+
+            responses:
+              200: # HTTP STatus Code
+              body:
+              application/json:
+                properties:
+
+                example: |
+                  {
+                  "resptext":"signature stored",
+                  "respcode":"02",
+                  "retref":"320121156263",
+                  "merchid":"496400000840"
+                  }
+
+/openbatch:
+  get:
+    description: create new settlement batch
+
+    queryParameters:
+
+      merchid:
+        type: string
+      batchsource:
+        type: string
+
+        responses:
+          200: # HTTP STatus Code
+            body:
+              application/json:
+                properties:
+                  batchid: string
+                  respcode: string
+                example: |
+                  {
+                  "batchid":"2628"
+                  "respcode":"success"
+                  }
+
+/closebatch:
+    get:
+      description: close a previously opened settlement batch
+
+      queryParameters:
+
+        merchid:
+          type: string
+        batchsource:
+          type: string
+
+      responses:
+        200: # HTTP STatus Code
+          body:
+            application/json:
+              properties:
+                batchid: string
+                respcode: string
+              example: |
+                {
+                  "batchid":"2628",
+                  "respcode":"success"
+                  }
+
+
+/bin:
+  get:
+    description: retrieve BIN information for a given token
+
+    queryParameters:
+        merchid:
+          type: string
+          minLength: 12
+          maxLength: 12
+        token:
+          minLength: 16
+          maxLength: 16
+          type: string
+
+        responses:
+          200: # HTTP STatus Code
+            body:
+              application/json:
+                properties:
+                  country: string
+                  product: string
+                  cardusestring: string
+                  gsa: boolean
+                  corporate: boolean
+                  fsa: boolean
+                  subtype: string
+                  purchase: boolean
+                  prepaid: boolean
+                  binlo: string
+                  issuer: string
+                  binhi: string
+
+                example: |
+                  {
+                     "country": "USA",
+                     "product": "V",
+                     "cardusestring": "Debit hybrid",
+                     "gsa": false,
+                     "corporate": false,
+                     "fsa": false,
+                     "subtype": "Visa Classic",
+                     "purchase": false,
+                     "prepaid": true,
+                     "binlo": "405482XXX",
+                     "issuer": "Td Bank, National Association",
+                     "binhi": "405482XXX"
+                  }
