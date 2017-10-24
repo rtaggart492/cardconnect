@@ -1,14 +1,16 @@
 #%RAML 1.0
 title: CardConnect Rest API
-version: v1
+version: v1.0.0
+# baseUri: https://mocksvc.mulesoft.com/mocks/fedfb8c5-bb02-4579-aa8a-b69261af0c60/cardconnect/rest 
 baseUri: https://fts.cardconnect.com:6443/cardconnect/rest
 securedBy: basic
 securitySchemes:
-  basic:
-    type: Basic Authentication
+ basic:
+  type: Basic Authentication
+    
 
 protocols: [ HTTP, HTTPS ]
-mediaType: [application/json, application/xml ]
+mediaType: [application/json]
 uses:
 
 types:
@@ -28,30 +30,51 @@ types:
 
 /auth:
 
+
+  description:   authorize a payment card  transact ion
+
   put:
-    description: Authorize a transaction
+    displayName: Authorize a Transaction
+
     body:
       application/json:
         properties:
           merchid:
             required: true
-          accttype: string
-          orderid: string
-          account: string
-          expiry: string
-          amount: string
-          currency: string
-          name: string
-          address: string
-          city: string
-          region: string
-          country: string
-          postal: string
-          ecomind: string
-          cvv2: string
-          track: string
-          tokenize: string
-          capture: string
+          accttype: 
+            required: false
+          orderid:
+            required: false
+          account:
+            required: false
+          expiry:
+            required: false
+          amount:
+            required: true
+          currency:
+            required: true
+          name:
+            required: false
+          address:
+            required: false
+          city:
+            required: false
+          region:
+            required: false
+          country:
+            required: false
+          postal:
+            required: false
+          ecomind:
+            required: true
+          cvv2:
+            required: false
+          track:
+            required: false
+          tokenize:
+            required: false
+          capture:
+            required: false
 
     responses:
       401:
@@ -81,50 +104,64 @@ types:
 
 
  put:
-   body:
+  
+  displayName: Capture a Transaction
+  
+  body:
     application/json:
 
       properties:
-        retref: string
-        merchid: string
-        authcode: string
-        amount: string
-        invoiceid: string
-        ponumber: string
-        taxamnt: integer
+        retref:
+          required: true
+        merchid:
+          required: true
+        authcode:
+          required: true
+        amount:
+          required: true
+        invoiceid:
+          required: false
+        ponumber:
+          required: false
+        taxamnt:
+          required: false
 
-   responses:
+  responses:
     401:
 
     200:
-      description:  Hi
+
       body:
         application/json:
           properties:
-            respproc: string
-            amount: string
-            resptext: string
-            setlstat: string
-            commcard: string
-            retref: string
-            respstat: string
-            respcode: string
-            batchid: string
-            account: string
-            merchid: string
-            token: string
+              respproc: string
+              amount: string
+              resptext: string
+              setlstat: string
+              commcard: string
+              retref: string
+              respstat: string
+              respcode: string
+              batchid: string
+              account: string
+              merchid: string
+              token: string
 
 /void:
   description: void a previously authorized transaction
 
   put:
+    displayName: Void a Transaction
     body:
      application/json:
 
        properties:
-         retref: string
-         merchid: string
-         amount: string
+         retref:
+          required: true
+         merchid:
+          required: true
+         amount: 
+          required: true
 
     responses:
       401:
@@ -146,13 +183,17 @@ types:
   description: refund a previously captured transaction
 
   put:
+    displayName: Refund a Transaction
     body:
      application/json:
 
        properties:
-         retref: string
-         merchid: string
-         amount: string
+         retref:
+          required: true
+         merchid:
+          required: true
+         amount:
+          required: true
 
     responses:
       401:
@@ -173,55 +214,94 @@ types:
               respproc: string
               respstat: string
 
-/inquire:
+/inquire/{retref}/{merchid}:
 
-  description: inquire about a transaction
+  description: Inquire about a transaction
+  # https://<hostname>:<port>/cardconnect/rest/inquire/<retref>/<merchid>
 
-  put:
-    body:
-     application/json:
 
-       properties:
-         retref: string
-         merchid: string
-
+  uriParameters:
+        retref: 
+          required: true       
+        merchid:
+          required: false
+          
+  get:
+    displayName: Inquire about a Transaction
     responses:
-      401:
+        401:
 
-      200:
-        body:
-          application/json:
-            properties:
-              amount: string
-              resptext: string
-              setlstat: string
-              capturedate: string
-              respcode: string
-              batchid: string
-              merchid: string
-              token: string
-              respproc: string
-              authdate: string
-              lastfour: string
-              name: string
-              currency: string
-              retref: string
-              respstat: string
-              account: string
+        200:
+          body:
+             application/json:
+              properties:
+                amount: string
+                resptext: string
+                setlstat: string
+                capturedate: string
+                respcode: string
+                batchid: string
+                merchid: string
+                token: string
+                respproc: string
+                authdate: string
+                lastfour: string
+                name: string
+                currency: string
+                retref: string
+                respstat: string
+                account: string
+
+/inquireByOderid/{orderid}/{merchid}:
+
+  description: Inquire about a transaction
+
+  uriParameters:
+        orderid: 
+          required: true       
+        merchid:
+          required: true
+          
+  get:
+    displayName: Inquire about a Transaction
+    responses:
+        401:
+
+        200:
+          body:
+             application/json:
+              properties:
+                amount: string
+                resptext: string
+                setlstat: string
+                capturedate: string
+                respcode: string
+                batchid: string
+                merchid: string
+                token: string
+                respproc: string
+                authdate: string
+                lastfour: string
+                name: string
+                currency: string
+                retref: string
+                respstat: string
+                account: string
 
 
-/setlstat:
+/settlestat:
 
-  description: settlment batch information
+  description: retrieve all settlement batches by date for merchant
 
   get:
-    description: retrieve all settlement batches by date for merchant
-
+    displayName: Retrieve Settlement Status by Date
     queryParameters:
         merchid:
           type: string
+          required: true
         date:
           type: date-only
+          required: true
 
     responses:
       401:
@@ -243,45 +323,46 @@ types:
   description: provide bank deposit data
 
   get:
-
-    description: retrieve all bank deposits by date for merchant
-
+    displayName: Retrieve Funding events by Date
     queryParameters:
         merchid:
           type: string
+          required: true
         date:
           type: string
+          required: true
 
-    responses:
-      200:
+      
+        responses:
+        
+        401:
+
+        200:
         body:
-          application/json:
-            properties:
-              cardtype: string
-              status: string
-              retref: string
-              interchangeunitfee: string
-              cardnumber: string
-              type: string
-              fundingid: number
-              interchangepercentfee: number
-              date: string
-              currency: string
-              cardbrand: string
-              amount: number
-              fundingtxnid: number
+        application/json:
+                  properties:
+                    cardtype: string
+                    status: string
+                    retref: string
+                    interchangeunitfee: string
+                    cardnumber: string
+                    type: string
+                    fundingid: number
+                    interchangepercentfee: number
+                    date: string
+                    currency: string
+                    cardbrand: string
+                    amount: number
+                    fundingtxnid: number
 
 
+   
+/profile/{profileid}/{acctid}/{merchid}:
 
-/profile:
-
-  description: card on file service
-
-  get:
-
-    description: retrieve a profile and either 1 or all accounts
-
-    queryParameters:
+    description:  Retrieve a profile
+  
+    uriParameters: 
+  
       profileid:
         type: string
       acctid:
@@ -289,28 +370,34 @@ types:
       merchid:
         type: string
 
-    responses:
-      200:
-        body:
-          application/json:
-            properties:
-              region: string
-              postal: string
-              address: string
-              accttype: string
-              token: string
-              name: string
-              license: string
-              country: string
-              city: string
-              expiry: string
-              profileid: string
-              acctid: string
+    get:
+      displayName: Retrieve a Account Pofile
+      responses:
+        401:
 
+        200:
+          
+          body:
+            application/json:
+              properties:
+                region: string
+                postal: string
+                address: string
+                accttype: string
+                token: string
+                name: string
+                license: string
+                country: string
+                city: string
+                expiry: string
+                profileid: string
+                acctid: string
 
+/profile:
+             
   put:
       description: create a profile
-
+      displayName: Create an Account Profile
       body:
         application/json:
 
@@ -339,7 +426,7 @@ types:
 
   delete:
     description: delete a profile
-
+    displayName: Delete an Account Profile
     queryParameters:
         profileid:
           type: string
@@ -365,7 +452,7 @@ types:
 /sigcap:
   put:
     description: save a signature image
-
+    displayName: Store a Signature Image
     body:
       application/json:
         properties:
@@ -380,61 +467,20 @@ types:
             properties:
 
 
+/bin/{merchid}/{token}:
+  
+    description: retrieve BIN information for a given token
+    uriParameters:
+       merchid: string
+       token: string
 
-/openbatch:
-  get:
-    description: create new settlement batch
-
-    queryParameters:
-
-      merchid:
-        type: string
-      batchsource:
-        type: string
-
-    responses:
-      200:
-        body:
-          application/json:
-            properties:
-              batchid: string
-              respcode: string
-
-/closebatch:
     get:
-      description: close a previously opened settlement batch
-
-      queryParameters:
-        merchid:
-          type: string
-        batchsource:
-          type: string
-
+      displayName: Retrieve BIN Information for a token
       responses:
-        200: # HTTP STatus Code
+        200:
           body:
             application/json:
               properties:
-                batchid: string
-                respcode: string
-              example: |
-                {
-                  "batchid":"2628",
-                  "respcode":"success"
-                  }
-
-
-/bin:
-  get:
-    description: retrieve BIN information for a given token
-    queryParameters:
-       merchid: string
-       token: string
-    responses:
-      200:
-        body:
-          application/json:
-            properties:
                country: string
                product: string
                cardusestring: string
